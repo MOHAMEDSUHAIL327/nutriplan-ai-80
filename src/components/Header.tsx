@@ -17,7 +17,7 @@ export function Header() {
   const loc = useLocation();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl pt-safe">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5 group">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-soft">
