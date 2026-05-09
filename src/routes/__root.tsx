@@ -10,6 +10,7 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/lib/theme";
 import { Header } from "@/components/Header";
+import { useCapacitor } from "@/hooks/use-capacitor";
 
 import appCss from "../styles.css?url";
 
@@ -43,7 +44,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "NutriPlan AI — Personalized Diet Generator" },
       { name: "description", content: "Get a personalized diet plan with BMI, BMR, TDEE and macro breakdown tailored to your goals, dietary preferences, and health conditions." },
       { property: "og:title", content: "NutriPlan AI — Personalized Diet Generator" },
@@ -70,10 +71,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useCapacitor();
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <div className="min-h-screen bg-gradient-soft">
+        <div className="min-h-screen bg-gradient-soft pb-safe">
           <Header />
           <Outlet />
           <Toaster richColors position="top-center" />
