@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, History, Drumstick } from "lucide-react";
-import type { Plan } from "@/lib/diet";
+import { generatePlan, type Plan } from "@/lib/diet";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/saved")({
@@ -15,7 +15,22 @@ function SavedPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
 
   useEffect(() => {
-    setPlans(JSON.parse(localStorage.getItem("nutriplan-plans") || "[]"));
+    let list: Plan[] = JSON.parse(localStorage.getItem("nutriplan-plans") || "[]");
+    if (!list || list.length === 0) {
+      const sample1 = generatePlan({
+        age: 24, gender: "male", height: 178, weight: 74,
+        activity: "moderate", goal: "muscle", diet: "high-protein",
+        conditions: [], allergies: []
+      });
+      const sample2 = generatePlan({
+        age: 28, gender: "female", height: 165, weight: 68,
+        activity: "light", goal: "loss", diet: "vegetarian",
+        conditions: ["thyroid"], allergies: ["nuts"]
+      });
+      list = [sample1, sample2];
+      localStorage.setItem("nutriplan-plans", JSON.stringify(list));
+    }
+    setPlans(list);
   }, []);
 
   const remove = (i: number) => {
@@ -32,7 +47,7 @@ function SavedPage() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <main className="mx-auto max-w-5xl px-4 py-8 pb-24 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Saved plans</h1>

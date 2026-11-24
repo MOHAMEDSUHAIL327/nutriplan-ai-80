@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Activity as ActIcon, Target, Salad, HeartPulse, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
+import { User, Activity as ActIcon, Target, Salad, HeartPulse, AlertTriangle, Sparkles, Loader2, Plus, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Activity, Allergy, Condition, Diet, Gender, Goal, UserInput } from "@/lib/diet";
 
 const schema = z.object({
@@ -35,6 +34,74 @@ const allergies: { id: Allergy; label: string }[] = [
 interface Props {
   onSubmit: (input: UserInput) => void;
   loading?: boolean;
+}
+
+interface NumberStepperProps {
+  value: string;
+  onChange: (val: string) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+}
+
+function NumberStepper({
+  value,
+  onChange,
+  min = 1,
+  max = 300,
+  step = 1,
+  unit,
+}: NumberStepperProps) {
+  const numVal = parseInt(value, 10);
+
+  const decrement = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const current = isNaN(numVal) ? min : numVal;
+    const next = Math.max(min, current - step);
+    onChange(String(next));
+  };
+
+  const increment = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const current = isNaN(numVal) ? min : numVal;
+    const next = Math.min(max, current + step);
+    onChange(String(next));
+  };
+
+  const isMin = !isNaN(numVal) && numVal <= min;
+  const isMax = !isNaN(numVal) && numVal >= max;
+
+  return (
+    <div className="flex h-11 w-full items-center justify-between rounded-xl border border-input bg-card p-1 shadow-sm select-none">
+      <button
+        type="button"
+        onClick={decrement}
+        disabled={isMin}
+        aria-label="Decrease"
+        className="flex h-9 w-10 items-center justify-center rounded-lg bg-secondary/80 text-foreground transition-all hover:bg-secondary active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+      >
+        <Minus className="h-4 w-4" />
+      </button>
+
+      <div className="flex items-baseline justify-center gap-1 font-semibold text-foreground tracking-tight select-none">
+        <span className="text-base font-bold">{value || min}</span>
+        {unit && <span className="text-xs font-normal text-muted-foreground">{unit}</span>}
+      </div>
+
+      <button
+        type="button"
+        onClick={increment}
+        disabled={isMax}
+        aria-label="Increase"
+        className="flex h-9 w-10 items-center justify-center rounded-lg bg-secondary/80 text-foreground transition-all hover:bg-secondary active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
+    </div>
+  );
 }
 
 export function DietForm({ onSubmit, loading }: Props) {
@@ -69,17 +136,20 @@ export function DietForm({ onSubmit, loading }: Props) {
   };
 
   return (
-    <motion.form
+    <form
       onSubmit={handle}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
       className="space-y-5"
     >
       <Section icon={<User className="h-4 w-4" />} title="Personal Information">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Age" error={errors.age}>
-            <Input type="number" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
+            <NumberStepper
+              value={age}
+              onChange={setAge}
+              min={10}
+              max={100}
+              step={1}
+            />
           </Field>
           <Field label="Gender">
             <Select value={gender} onValueChange={(v) => setGender(v as Gender)}>
@@ -91,10 +161,24 @@ export function DietForm({ onSubmit, loading }: Props) {
             </Select>
           </Field>
           <Field label="Height (cm)" error={errors.height}>
-            <Input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+            <NumberStepper
+              value={height}
+              onChange={setHeight}
+              min={100}
+              max={250}
+              step={1}
+              unit="cm"
+            />
           </Field>
           <Field label="Weight (kg)" error={errors.weight}>
-            <Input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
+            <NumberStepper
+              value={weight}
+              onChange={setWeight}
+              min={25}
+              max={300}
+              step={1}
+              unit="kg"
+            />
           </Field>
         </div>
       </Section>
@@ -150,7 +234,7 @@ export function DietForm({ onSubmit, loading }: Props) {
         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
         {loading ? "Generating your plan..." : "Generate My Diet Plan"}
       </Button>
-    </motion.form>
+    </form>
   );
 }
 
@@ -184,15 +268,20 @@ function CheckGrid<T extends string>({ items, selected, onToggle }: { items: { i
       {items.map((it) => {
         const active = selected.includes(it.id);
         return (
-          <label
+          <div
             key={it.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => onToggle(it.id)}
             className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition-colors ${
               active ? "border-primary bg-accent text-foreground" : "border-border hover:bg-muted/50"
             }`}
           >
-            <Checkbox checked={active} onCheckedChange={() => onToggle(it.id)} />
-            <span>{it.label}</span>
-          </label>
+            <div className="pointer-events-none">
+              <Checkbox checked={active} />
+            </div>
+            <span className="select-none">{it.label}</span>
+          </div>
         );
       })}
     </div>

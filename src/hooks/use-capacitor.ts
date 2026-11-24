@@ -8,11 +8,19 @@ export const useCapacitor = () => {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    // Initialize Status Bar
+    // Initialize Status Bar according to current theme
     const initStatusBar = async () => {
       try {
-        await StatusBar.setStyle({ style: Style.Default });
-        await StatusBar.setBackgroundColor({ color: '#ffffff' });
+        const isDark = document.documentElement.classList.contains("dark");
+        if (isDark) {
+          // Dark theme -> Style.Dark (white icons on dark background)
+          await StatusBar.setStyle({ style: Style.Dark });
+          await StatusBar.setBackgroundColor({ color: '#0f1712' });
+        } else {
+          // Light theme -> Style.Light (dark icons on light background)
+          await StatusBar.setStyle({ style: Style.Light });
+          await StatusBar.setBackgroundColor({ color: '#ffffff' });
+        }
       } catch (e) {
         console.error('StatusBar error:', e);
       }
